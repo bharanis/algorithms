@@ -14,7 +14,13 @@ int partition (int *arr, int left, int right, int pivotidx)
    int storeidx = left;
    int i;
 
+   /* Move pivot to the right */
    swap (arr, pivotidx, right);
+   
+   /* now compare rest of the elements with pivot and if < pivot, 
+      swap them to left side of the array and bump up the storeidx
+      At the end of the loop array[left..storeidx] < pivot
+    */
    for (i = left; i <= right-1; i++) {
       if (arr[i] < pivot) {
         swap(arr, i, storeidx);
@@ -22,6 +28,7 @@ int partition (int *arr, int left, int right, int pivotidx)
       }
    }
 
+   /* swap the pivot to storeidx, now pivot is in the correct place */
    swap (arr, right, storeidx);
    return storeidx;
 }
