@@ -274,6 +274,7 @@ void print_dotty (bnode *node, void *ctx)
 
 
 
+
 #define delete_tree(r)      postorder(r, (void (*) (bnode *, void*))free, NULL)
 
 
@@ -332,6 +333,7 @@ preorder(bnode *root, void (*fn) (bnode*, void*), void *ctx)
 print_tree(bnode *root)
 {
    struct printnode_ws_ctx ctx;
+#if 0
    /* print bst inorder => sorted */
    printf ("inorder:   ");
    inorder(root, printnode, NULL);
@@ -345,15 +347,17 @@ print_tree(bnode *root)
    printf ("\nbfs:       ");
    bfs(root, printnode, NULL);
 
-   printf ("\nws:       ");
-   printnode_ws_ctx_init (&ctx);
-   bfs(root, printnode_ws, &ctx);
-   printnode_ws_ctx_cleanup (&ctx);
-
    printf ("\n");
    printf ("digraph bst {\n");
    preorder (root, print_dotty, NULL);
    printf ("}\n");
+#endif
+
+   printnode_ws_ctx_init (&ctx);
+   bfs(root, printnode_ws, &ctx);
+   printnode_ws_ctx_cleanup (&ctx);
+   printf ("\n");
+ 
 }
 
 
@@ -414,7 +418,7 @@ main ()
 
       for (i=0; i<input_size; i++) {
         delete (&bstroot, input[i]); 
-        printf ("deleted: %d\n", input[i]);
+        printf ("\n\ndeleted: %d\n", input[i]);
         ws_tidy (bstroot);
         print_tree(bstroot);
       }
