@@ -152,6 +152,8 @@ bfs (bnode *root, void (*fn) (bnode *))
 
    for (i=0; i<c; i++)
       fn(q[i]);
+      
+   free(q);
 }
 
 inorder(bnode *root, void (*fn) (bnode*))
