@@ -245,17 +245,74 @@ void printnode_ws(bnode *n, struct printnode_ws_ctx *ctx)
    }
 
    if (ctx->lasty != n->y) {
-      printf ("\n%s\n", ctx->connector_line1);
+      printf ("\n%s", ctx->connector_line1);
+      printf ("\n%s", ctx->connector_line2);
+      printf ("\n");
       ctx->lasty = n->y;
       ctx->lastx = 0;
+      ctx->last_connector_x = 0;
       ctx->connector_line1[0] = '\0';
+      ctx->connector_line2[0] = '\0';
    }
 
    deltax = n->x - ctx->lastx - 1;
-
    printf ("%*s%*d", deltax*ns, " ", ns, n->key);
-   sprintf (ctx->connector_line1 + strlen(ctx->connector_line1), "%*s%c%c", deltax*ns + ns/2, " ", (n->left?'/':' '), (n->right?'\\':' '));
+   sprintf (ctx->connector_line1 + strlen(ctx->connector_line1), "%*s%s", deltax*ns + ns/2 + 1, " ", (n->left||n->right)?"|":" ");
    ctx->lastx = n->x;
+
+#if 1
+#define hdash    '-'
+#define vdash    '|'
+#define lterm    '+'
+#define rterm    '+'
+#define center   '+'
+#define lcenter  '+'
+#define rcenter  '+'
+#else
+#define hdash    196
+#define vdash    '|'
+#define lterm    218
+#define rterm    191
+#define center   193
+#define lcenter  217
+#define rcenter  192
+#endif
+
+   if (n->left) {
+      char *s = ctx->connector_line2 + strlen(ctx->connector_line2);
+      int leftspc = (n->left->x - ctx->last_connector_x - 1)*ns + ns/2 + 1;
+      int leftdash  = (n->x - n->left->x - 1)*ns + ns/2 + 1;
+
+      memset(&s[0],' ',leftspc); 
+      s[leftspc] = lterm;
+      memset(&s[leftspc+1],hdash,leftdash); 
+      s[leftspc+1+leftdash] = lcenter;
+      s[leftspc+1+leftdash+1]= '\0';
+      ctx->last_connector_x = n->x;
+
+      if (n->right) {
+        int rightdash  = (n->right->x - n->x - 1)*ns + ns/2 + 1;
+        s[leftspc+1+leftdash] = center;
+        memset(&s[leftspc+leftdash+2],hdash,rightdash); 
+        s[leftspc+leftdash+rightdash+2]= rterm;
+        s[leftspc+leftdash+rightdash+3]= '\0';
+        ctx->last_connector_x = n->right->x;
+      }
+   }
+   else if (n->right) {
+      char *s = ctx->connector_line2 + strlen(ctx->connector_line2);
+      int leftspc = (n->x - ctx->last_connector_x - 1)*ns + ns/2 + 1;
+      int rightdash  = (n->right->x - n->x - 1)*ns + ns/2 + 1;
+
+      memset(&s[0],' ',leftspc); 
+      s[leftspc] = rcenter;
+      memset(&s[leftspc+1],hdash,rightdash); 
+      s[leftspc+1+rightdash] = rterm;
+      s[leftspc+1+rightdash+1] = '\0';
+
+      ctx->last_connector_x = n->right->x;
+   }
+
 }
 
 
@@ -352,7 +409,6 @@ print_tree(bnode *root)
    preorder (root, print_dotty, NULL);
    printf ("}\n");
 #endif
-
    printnode_ws_ctx_init (&ctx);
    bfs(root, printnode_ws, &ctx);
    printnode_ws_ctx_cleanup (&ctx);
@@ -394,7 +450,7 @@ void print_array(char *header, int *a, int s)
               main 
  ************************************/
 
-int input[25];
+int input[100];
 main ()
 {
    int input_size, i, trial;
@@ -416,12 +472,14 @@ main ()
       ws_tidy (bstroot);
       print_tree(bstroot);
 
+#if 0
       for (i=0; i<input_size; i++) {
         delete (&bstroot, input[i]); 
         printf ("\n\ndeleted: %d\n", input[i]);
         ws_tidy (bstroot);
         print_tree(bstroot);
       }
+#endif
 
       /* delete tree */
       delete_tree (bstroot);
