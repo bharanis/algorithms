@@ -360,6 +360,8 @@ bfs (bnode *root, void (*fn) (bnode *, void *ctx), void *ctx)
 
    for (i=0; i<c; i++)
       fn(q[i], ctx);
+      
+   free(q);   
 }
 
 inorder(bnode *root, void (*fn) (bnode*, void*), void *ctx)
