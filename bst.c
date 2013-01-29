@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define max_val(x,y) (((x)>(y))?(x):(y))
+
 typedef struct node {
    struct node *left;
    struct node *right;
@@ -110,7 +112,7 @@ int depth (bnode *root)
    if (root == NULL) 
      return 0;
 
-   return 1 + (depth(root->left) | depth(root->right));
+   return 1 + max_val (depth(root->left), depth(root->right));
 }
 
 
@@ -152,7 +154,7 @@ bfs (bnode *root, void (*fn) (bnode *))
 
    for (i=0; i<c; i++)
       fn(q[i]);
-      
+
    free(q);
 }
 
@@ -178,28 +180,6 @@ preorder(bnode *root, void (*fn) (bnode*))
     fn(root);
     preorder(root->left, fn);
     preorder(root->right, fn);
-}
-
-
-print_tree(bnode *root)
-{
-   /* print bst inorder => sorted */
-   printf ("inorder:   ");
-   inorder(root, printnode);
-
-   printf ("\npreorder:  ");
-   preorder(root, printnode);
-
-   printf ("\npostorder: ");
-   postorder(root, printnode);
-
-   printf ("\nbfs:       ");
-   bfs(root, printnode);
-
-   printf ("\n");
-   printf ("digraph bst {\n");
-   preorder (root, print_dotty);
-   printf ("}\n");
 }
 
 
@@ -234,6 +214,27 @@ void print_array(char *header, int *a, int s)
 /*************************************
               main 
  ************************************/
+
+print_tree(bnode *root)
+{
+   /* print bst inorder => sorted */
+   printf ("inorder:   ");
+   inorder(root, printnode);
+
+   printf ("\npreorder:  ");
+   preorder(root, printnode);
+
+   printf ("\npostorder: ");
+   postorder(root, printnode);
+
+   printf ("\nbfs:       ");
+   bfs(root, printnode);
+
+   printf ("\n");
+   printf ("digraph bst {\n");
+   preorder (root, print_dotty);
+   printf ("}\n");
+}
 
 int input[25];
 main ()
