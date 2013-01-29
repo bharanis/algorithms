@@ -182,6 +182,26 @@ preorder(bnode *root, void (*fn) (bnode*))
     preorder(root->right, fn);
 }
 
+print_tree(bnode *root)
+{
+   /* print bst inorder => sorted */
+   printf ("inorder:   ");
+   inorder(root, printnode);
+
+   printf ("\npreorder:  ");
+   preorder(root, printnode);
+
+   printf ("\npostorder: ");
+   postorder(root, printnode);
+
+   printf ("\nbfs:       ");
+   bfs(root, printnode);
+
+   printf ("\n");
+   printf ("digraph bst {\n");
+   preorder (root, print_dotty);
+   printf ("}\n");
+}
 
 /*************************************
             array helpers 
@@ -214,27 +234,6 @@ void print_array(char *header, int *a, int s)
 /*************************************
               main 
  ************************************/
-
-print_tree(bnode *root)
-{
-   /* print bst inorder => sorted */
-   printf ("inorder:   ");
-   inorder(root, printnode);
-
-   printf ("\npreorder:  ");
-   preorder(root, printnode);
-
-   printf ("\npostorder: ");
-   postorder(root, printnode);
-
-   printf ("\nbfs:       ");
-   bfs(root, printnode);
-
-   printf ("\n");
-   printf ("digraph bst {\n");
-   preorder (root, print_dotty);
-   printf ("}\n");
-}
 
 int input[25];
 main ()
