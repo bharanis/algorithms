@@ -7,13 +7,14 @@
 int bstarray[1<<MAX_BTREE_DEPTH];
 #define max_btree_idx_check(x,rv)  if(x > (1<<MAX_BTREE_DEPTH)) return rv;
 
+#define max_val(x,y) (((x)>(y))?(x):(y))
+
 #define leftval(a,x)        a[((x)*2)]
 #define rightval(a,x)       a[((x)*2 + 1)]
 #define parentval(a,x)      a[((int)(x)/2)]
 #define left(x)             ((x)*2)
 #define right(x)            ((x)*2 + 1)
 #define parent(x)           ((int)(x)/2)
-
 
 
 int insert (int *array, int key)
@@ -81,42 +82,66 @@ int smallest(int *array, int root)
 }
 
 
-#if 0
-delete(bnode **root, int key)
+void pullup_subtree(int *array, int child, int root, int maxidx, int leftup) 
 {
-   bnode *temp;
+   leftval(array, root) = (left(child)>=MAX_BTREE_IDX)?BTREE_INVALID:leftval(array, child);
+   rightval(array,root) = (right(child)>=MAX_BTREE_IDX)?BTREE_INVALID:rightval(array, child);
 
-   while (*root != NULL) {
-     if ((*root)->key == key) 
-        break;
-     else if ((*root)->key > key) 
-        root = &(*root)->left;
-     else 
-        root = &(*root)->right;
-   }
-  
-   if (NULL == *root) 
-      return;
+   if (left(child) > MAX_BTREE_IDX) return;
 
-   if ((NULL == (*root)->left) && (NULL == (*root)->right)) {
-      free (*root);
-      *root = NULL;
-   } else if (NULL == (*root)->left) {
-      temp = *root;
-      *root = (*root)->right;
-      free (temp);
-   } else if (NULL == (*root)->right) {
-      temp = *root;
-      *root = (*root)->left;
-      free (temp);
+   if (left(child) > maxidx) return;
+
+   if (leftup) {
+     pullup_subtree (array, right(child), right(root), maxidx, leftup);
+     pullup_subtree (array, left(child), left(root), maxidx, leftup);
    } else {
-      /* swap out next smallest to current node */
-      (*root)->key = (smallest((*root)->right))->key;
-      /* delete next smallest node */
-      delete (&(*root)->right, (*root)->key);
+     pullup_subtree (array, left(child), left(root), maxidx, leftup);
+     pullup_subtree (array, right(child), right(root), maxidx, leftup);
    }
 }
-#endif
+
+
+delete(int *array, int root, int key)
+{
+   int p, lexist = 0, rexist = 0;
+
+   max_btree_idx_check(root, 0);
+   while (array[root] != BTREE_INVALID) {
+     if (array[root] > key) {
+        root = left(root);
+     } else if (array[root] < key) {
+        root = right(root);
+     } else {
+        break;
+     }
+     max_btree_idx_check(root, 0);
+   }
+   
+   if (array[root] == BTREE_INVALID)
+      return 0;
+
+
+   if ((left(root) < MAX_BTREE_IDX) && (leftval(array, root)!=BTREE_INVALID))
+      lexist = 1;
+   if ((right(root) < MAX_BTREE_IDX) && (rightval(array, root)!=BTREE_INVALID))
+      rexist = 1;
+
+   if (!lexist && !rexist) {
+      array[root] = BTREE_INVALID;
+   } else if (!lexist) {
+      array[root] = rightval(array, root);
+      pullup_subtree (array, right(root), root, 1<<depth(array, 1), 0);
+   } else if (!rexist) {
+      array[root] = leftval(array, root);
+      pullup_subtree (array, left(root), root, 1<<depth(array, 1), 1);
+   } else {
+      /* swap out next smallest to current node */
+      array[root] = array[smallest(array, right(root))];
+
+      /* delete next smallest node */
+      delete (array, right(root), array[root]);
+   }
+}
 
 int count (int *array, int root)
 {
@@ -135,17 +160,19 @@ int depth (int *array, int root)
    if (array[root] == BTREE_INVALID) 
      return 0;
 
-   return 1 + (count(array, left(root)) | count(array, right(root)));
+   return 1 + max_val(depth(array, left(root)), depth(array, right(root)));
 }
+
+
 
 
 void print_dotty (int *array, int root)
 {
    if ((left(root) < MAX_BTREE_IDX) && (leftval(array, root)!=BTREE_INVALID))
-     printf ("    %d -> %d;\n", array[root], leftval(array,root));
+     printf ("  %d.%d <- %d.%d;\n", leftval(array,root), left(root), array[root], root);
 
    if ((right(root) < MAX_BTREE_IDX) && (rightval(array, root)!=BTREE_INVALID))
-     printf ("    %d -> %d;\n", array[root], rightval(array,root));
+     printf ("       %d.%d -> %d.%d;\n", array[root], root, rightval(array,root), right(root));
 }
 
 
@@ -251,6 +278,7 @@ print_tree(int *array)
    printf ("inorder:   ");
    inorder(array, 1, printnode);
 
+#if 0
    printf ("\npreorder:  ");
    preorder(array, 1, printnode);
 
@@ -264,6 +292,7 @@ print_tree(int *array)
    printf ("digraph bst {\n");
    preorder(array, 1, print_dotty);
    printf ("}\n");
+#endif
 }
 
 int input[50];
@@ -288,12 +317,10 @@ main ()
 
       print_tree(bstarray);
 
-#if 0
       for (i=0; i<input_size; i++) {
-        delete (bstarray, input[i]); 
+        delete (bstarray, 1, input[i]); 
         printf ("\ndeleted: %d\n", input[i]);
         print_tree(bstarray);
       }
-#endif
    }
 }
