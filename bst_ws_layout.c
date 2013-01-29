@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define max_val(x,y) (((x)>(y))?(x):(y))
+
 typedef struct node {
    struct node *left;
    struct node *right;
@@ -128,7 +130,7 @@ int depth (bnode *root)
    if (root == NULL) 
      return 0;
 
-   return 1 + (depth(root->left) | depth(root->right));
+   return 1 + max_val(depth(root->left), depth(root->right));
 }
 
 
@@ -360,8 +362,8 @@ bfs (bnode *root, void (*fn) (bnode *, void *ctx), void *ctx)
 
    for (i=0; i<c; i++)
       fn(q[i], ctx);
-      
-   free(q);   
+
+   free(q);
 }
 
 inorder(bnode *root, void (*fn) (bnode*, void*), void *ctx)
