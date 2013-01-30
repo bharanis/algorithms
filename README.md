@@ -1,15 +1,12 @@
 algorithms
 ==========
-
 basic algorithms from scratch to refresh my memory
 
 
-
-bst_ws_layout.c o/p:
-unsorted:  66 480 241 237 416 60 8 369 291 57 7 238 57 98 370 420 470 503 464 475 438 62 91 314 499 184 440 102 67 270 316 133 231 38 370 127 490 250 368 133 307 375 244 237 474 486 9 296 342 473 124 260 
-
-
-
+1) Binary Search Tree
+ bst.c            => Basic BST implementation
+ bst_array.c      => Array based BST implementation
+ bst_ws_layout.c  => BST implementation with "WETHERELL AND SHANNON: TIDY DRAWING OF TREES"
                                   66
                                    |
            +-----------------------+---------------------------+
@@ -38,3 +35,4 @@ unsorted:  66 480 241 237 416 60 8 369 291 57 7 238 57 98 370 420 470 503 464 47
                |                                       |                
            +---+                                   +---+
          124                                     342
+  
