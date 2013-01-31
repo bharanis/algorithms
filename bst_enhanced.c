@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define max_val(x,y) (((x)>(y))?(x):(y))
 
@@ -195,11 +196,20 @@ ws_tidy_phase2 (bnode *root, int modifier_sum, struct ws_tidy_ctx  *ctx)
    ws_tidy_phase2 (root->right, modifier_sum, ctx);
 }
 
+ws_tidy_nodereset(bnode *root, void *c)
+{
+   root->x = 0;
+   root->y = 0;
+   root->modifier = 0;
+}
+
 ws_tidy(bnode *root)
 {
     int max_height = depth(root);
     struct ws_tidy_ctx  ctx;
     int i;
+
+    inorder (root, ws_tidy_nodereset, NULL);
 
     ctx.modifier = (int*) malloc (max_height * sizeof(int)); 
     ctx.nextpos = (int*) malloc (max_height * sizeof(int)); 
@@ -421,7 +431,47 @@ print_tree(bnode *root)
  
 }
 
+print_path(bnode *root, int *path, int len)
+{
+   int i;
+   if (NULL == root) return;
 
+   path[len++] = root->key;
+
+   if ((NULL == root->left) && (NULL == root->right)) {
+     printf("%d", path[0]);
+     for (i = 1; i < len; i++) 
+        printf("->%d", path[i]);
+     printf ("\n");
+   } else {
+     print_path(root->left, path, len);
+     print_path(root->right, path, len);
+   }
+}
+
+print_paths(bnode *root)
+{
+   int max_height = depth(root);
+   int *path = (int*) malloc (sizeof(int)*(max_height + 1));
+
+   print_path (root, path, 0);
+
+   free (path);
+}
+
+_mirror(bnode *root, void* ctx)
+{
+  bnode *temp;
+  
+  temp = root->left;
+  root->left = root->right;
+  root->right = temp;
+}
+
+mirror(bnode *root)
+{
+   postorder(root, _mirror, NULL);
+}
 
 /*************************************
             array helpers 
@@ -475,7 +525,17 @@ main ()
 
 
       ws_tidy (bstroot);
+      printf ("tree:\n");
       print_tree(bstroot);
+
+      printf ("paths:\n");
+      print_paths(bstroot);
+
+      mirror(bstroot);
+      ws_tidy (bstroot);
+      printf ("mirror:\n");
+      print_tree(bstroot);
+
 
 #if 0
       for (i=0; i<input_size; i++) {
