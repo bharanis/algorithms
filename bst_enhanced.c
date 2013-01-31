@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #define max_val(x,y) (((x)>(y))?(x):(y))
 
@@ -402,34 +403,6 @@ preorder(bnode *root, void (*fn) (bnode*, void*), void *ctx)
 }
 
 
-print_tree(bnode *root)
-{
-   struct printnode_ws_ctx ctx;
-#if 0
-   /* print bst inorder => sorted */
-   printf ("inorder:   ");
-   inorder(root, printnode, NULL);
-
-   printf ("\npreorder:  ");
-   preorder(root, printnode, NULL);
-
-   printf ("\npostorder: ");
-   postorder(root, printnode, NULL);
-
-   printf ("\nbfs:       ");
-   bfs(root, printnode, NULL);
-
-   printf ("\n");
-   printf ("digraph bst {\n");
-   preorder (root, print_dotty, NULL);
-   printf ("}\n");
-#endif
-   printnode_ws_ctx_init (&ctx);
-   bfs(root, printnode_ws, &ctx);
-   printnode_ws_ctx_cleanup (&ctx);
-   printf ("\n");
- 
-}
 
 print_path(bnode *root, int *path, int len)
 {
@@ -472,6 +445,81 @@ mirror(bnode *root)
 {
    postorder(root, _mirror, NULL);
 }
+
+
+_random_swap(bnode *root, bnode *swapnode, int swaps)
+{
+   int temp;
+   if (swaps == 0) return 0;
+   if (root == NULL) return swaps;
+
+   if ((random() % 10) > 5) {
+      if (NULL == swapnode) {
+         swapnode = root;
+      } else {
+         swaps--;
+         temp = root->key;
+         root->key = swapnode->key;
+         swapnode->key = temp;
+         swapnode = NULL;
+      }
+   }
+
+   return _random_swap (root->left, swapnode, swaps);
+   return _random_swap (root->right, swapnode, swaps);
+}
+
+random_swap(bnode *root, int swaps)
+{
+  return _random_swap(root, NULL, swaps);
+}
+
+_isbst(bnode *root, int min, int max)
+{
+   if (!root) return 1;
+
+   if ((root->key > max) || (root->key < min)) {
+      printf ("%d is out of order\n", root->key);
+      return 0;
+   }
+
+   return _isbst(root->left, min, root->key) && _isbst(root->right, root->key, max);
+}
+
+isbst(bnode *root)
+{
+   return _isbst(root, INT_MIN, INT_MAX);
+}
+
+
+print_tree(bnode *root)
+{
+   struct printnode_ws_ctx ctx;
+#if 0
+   /* print bst inorder => sorted */
+   printf ("inorder:   ");
+   inorder(root, printnode, NULL);
+
+   printf ("\npreorder:  ");
+   preorder(root, printnode, NULL);
+
+   printf ("\npostorder: ");
+   postorder(root, printnode, NULL);
+
+   printf ("\nbfs:       ");
+   bfs(root, printnode, NULL);
+
+   printf ("\n");
+   printf ("digraph bst {\n");
+   preorder (root, print_dotty, NULL);
+   printf ("}\n");
+#endif
+   printnode_ws_ctx_init (&ctx);
+   bfs(root, printnode_ws, &ctx);
+   printnode_ws_ctx_cleanup (&ctx);
+   printf ("\n");
+}
+
 
 /*************************************
             array helpers 
@@ -525,17 +573,23 @@ main ()
 
 
       ws_tidy (bstroot);
-      printf ("tree:\n");
+      printf ("binary search tree:\n");
       print_tree(bstroot);
 
       printf ("paths:\n");
       print_paths(bstroot);
 
+      if (2 != random_swap(bstroot, 2)) {
+         printf ("BST distrubed\n");
+         ws_tidy (bstroot);
+         print_tree(bstroot);
+      }
+      printf ("isbst returned %s\n", isbst(bstroot)?"true":"false");
+
       mirror(bstroot);
       ws_tidy (bstroot);
       printf ("mirror:\n");
       print_tree(bstroot);
-
 
 #if 0
       for (i=0; i<input_size; i++) {
