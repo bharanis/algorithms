@@ -4,6 +4,7 @@
 #define max_val(x,y) (((x)>(y))?(x):(y))
 
 typedef struct node {
+   /* bare minimum binary tree node */
    struct node *left;
    struct node *right;
    int          key;

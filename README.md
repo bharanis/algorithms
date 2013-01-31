@@ -6,7 +6,7 @@ basic algorithms from scratch to refresh my memory
 1) Binary Search Tree
  bst.c            => Basic BST implementation
  bst_array.c      => Array based BST implementation
- bst_ws_layout.c  => BST implementation with "WETHERELL AND SHANNON: TIDY DRAWING OF TREES"
+ bst_enhanced.c   => BST implementation with "WETHERELL AND SHANNON: TIDY DRAWING OF TREES"
                                   66
                                    |
            +-----------------------+---------------------------+
