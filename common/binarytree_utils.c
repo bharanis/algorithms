@@ -36,6 +36,39 @@ bnode *bst_insert (bnode **root, int key)
 }
 
 
+bnode *_random_insert (bnode **root, int key, int d)
+{
+   if (NULL == *root) {
+     bnode *node;
+
+     if (NULL == (node = (bnode*)malloc (sizeof (bnode)))) {
+        return NULL;
+     }
+
+     node->key    = key;
+     node->height = d;
+     node->right  = node->left = NULL;
+     *root = node;
+     return node;
+   }
+
+   
+   if (random()%10 > 5) {
+      return _random_insert (&(*root)->left, key, ++d);
+   }
+   else if ((*root)->key < key) {
+      return _random_insert (&(*root)->right, key, ++d);
+   }
+
+   return NULL;
+}
+
+
+bnode *random_insert(bnode **root, int key)
+{
+   return _random_insert (root, key, 0);
+}
+
 bnode *bst_search (bnode *root, int key)
 {
    while (root != NULL) {
@@ -205,7 +238,7 @@ ws_tidy(bnode *root)
     struct ws_tidy_ctx  ctx;
     int i;
 
-    inorder (root, ws_tidy_nodereset, NULL);
+    inorder (root, (void (*) (bnode*, void*))ws_tidy_nodereset, NULL);
 
     ctx.modifier = (int*) malloc (max_height * sizeof(int)); 
     ctx.nextpos = (int*) malloc (max_height * sizeof(int)); 
@@ -215,7 +248,7 @@ ws_tidy(bnode *root)
        ctx.nextpos[i] = 1;
     }
 
-    postorder (root, ws_tidy_phase1, (void*)&ctx);
+    postorder (root, (void (*) (bnode*, void*))ws_tidy_phase1, (void*)&ctx);
     ws_tidy_phase2(root, 0, &ctx);
 
     free (ctx.modifier);
@@ -331,7 +364,7 @@ void print_ws(bnode *root)
 
    ws_tidy (root);
    printnode_ws_ctx_init (&ctx);
-   bfs(root, printnode_ws, &ctx);
+   bfs(root, (void (*) (bnode *, void*))printnode_ws, &ctx);
    printnode_ws_ctx_cleanup (&ctx);
 }
 
@@ -521,18 +554,14 @@ void print_tree(bnode *root)
             array helpers 
  ************************************/
 
-int populate_array (int *arr, int size)
+void populate_array (int *arr, int size)
 {
    int i;
-   /* randomize size between size/10 .. size */
-   size = (random() % (size-size/10)) + size/10;
-
    /* populate with data range of 0 .. size*10 */
    for (i = 0; i < size; i ++) {
       arr[i] = random() % (size*10);
    }
 
-   return size;
 }
 
 void print_array(char *header, int *a, int s)
@@ -542,4 +571,41 @@ void print_array(char *header, int *a, int s)
   printf("%s", header);
   for (i = 0; i < s; i++) 
      printf("%d ", a[i]);
+}
+
+
+
+bnode *create_random_bst(int size)
+{
+   bnode *root = NULL;
+   int   *input = (int*) malloc (size*sizeof(int)+1);
+   int    i;
+
+   populate_array (input, size);
+   print_array ("\ninput:  ", input, size);
+   printf ("\n");
+
+   /* convert array to bst */
+   for (i=0; i<size; i++)
+      bst_insert (&root, input[i]);
+
+   return root;
+}
+
+
+bnode *create_random_bt(int size)
+{
+   bnode *root = NULL;
+   int   *input = (int*) malloc (size*sizeof(int)+1);
+   int    i;
+
+   populate_array (input, size);
+   print_array ("\ninput:  ", input, size);
+   printf ("\n");
+
+   /* convert array to bst */
+   for (i=0; i<size; i++)
+      random_insert (&root, input[i]);
+
+   return root;
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* we are using an array to represent a heap.
  * The heap begins at index 1. i.e, root of the heap is a[1]
@@ -169,7 +170,7 @@ main ()
 {
    int input_size, i, trial;
 
-   srandom ((unsigned)&i);
+   srandom (i);
 
    for (trial=0; trial < 3; trial ++) {
       memset (heaparray, HEAP_INVALID, sizeof(heaparray));

@@ -2,37 +2,9 @@ algorithms
 ==========
 basic algorithms from scratch to refresh my memory
 
-
-1) Binary Search Tree
- bst.c            => Basic BST implementation
- bst_array.c      => Array based BST implementation
- bst_enhanced.c   => BST implementation with "WETHERELL AND SHANNON: TIDY DRAWING OF TREES"
-                                  66
-                                   |
-           +-----------------------+---------------------------+
-          60                                                 480
-           |                                                   |
-       +---+---+                   +---------------------------+---------------------------+
-       8      62                 241                                                     503
-       |                           |                                                       |
-   +---+---+       +---------------+-------------------+                               +---+
-    7      57     237                                 416                             499
-           |       |                                   |                               |
-       +---+   +---+---+                   +-----------+-----------+               +---+
-      38      98     238                 369                     420             490
-       |       |                           |                       |               |
-   +---+   +---+---+                   +---+-------+               +---+       +---+
-    9      91     184                 291         370                 470     486
-           |       |                   |           |                   |        
-       +---+   +---+---+       +-------+-------+   +---+       +-------+-------+
-      67     102     231     270             314     375     464             475
-               |               |               |               |               |
-               +---+       +---+           +---+---+       +---+           +---+
-                 133     250             307     316     438             474
-                   |       |               |       |       |               |
-               +---+   +---+---+       +---+       +---+   +---+       +---+
-             127     244     260     296             368     440     473
-               |                                       |                
-           +---+                                   +---+
-         124                                     342
-  
+bst/bst_basic.c      => Basic BST implementation
+bst/bst_array.c      => Array based BST implementation
+bst/bst_enhanced.c   => BST implementation with "WETHERELL AND SHANNON: TIDY DRAWING OF TREES"
+bst/largest_bst_in_bt.c => Largest BST withing a Binary Tree
+heap/heap_array.c    => Basic Heap implementation
+sorting/quicksort.c  => Basic Quicksort

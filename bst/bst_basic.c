@@ -240,7 +240,7 @@ main ()
 {
    int input_size, i, trial;
 
-   srandom ((unsigned)&i);
+   srandom (i);
    bnode *bstroot = NULL;
 
    for (trial=0; trial < 3; trial ++) {

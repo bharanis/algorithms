@@ -10,24 +10,18 @@
               main 
  ************************************/
 
-int input[100];
+#define maxsize  100
 main ()
 {
    int input_size, i, trial;
-
-   srandom ((unsigned)&i);
    bnode *bstroot = NULL;
 
+   srandom (&i);
+
    for (trial=0; trial < 3; trial ++) {
-      input_size = populate_array (input, sizeof(input)/sizeof(input[0]));
 
-      print_array ("\nunsorted:  ", input, input_size);
-      printf ("\n");
-
-      /* convert array to bst */
-      for (i=0; i<input_size; i++)
-         bst_insert (&bstroot, input[i]);
-
+      input_size = (random() % (maxsize-maxsize/10)) + maxsize/10;
+      bstroot = create_random_bst(input_size);
 
       printf ("binary search tree:\n");
       print_tree(bstroot);
@@ -47,7 +41,7 @@ main ()
 
 #if 0
       for (i=0; i<input_size; i++) {
-        delete (&bstroot, input[i]); 
+        bst_delete(&bstroot, input[i]); 
         printf ("\n\ndeleted: %d\n", input[i]);
         print_tree(bstroot);
       }

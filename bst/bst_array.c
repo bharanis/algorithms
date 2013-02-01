@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define BTREE_INVALID        -1
 #define MAX_BTREE_DEPTH      10
@@ -301,7 +302,7 @@ main ()
 {
    int input_size, i, trial;
 
-   srandom ((unsigned)&i);
+   srandom (i);
 
    for (trial=0; trial < 3; trial ++) {
       memset (bstarray, BTREE_INVALID, sizeof(bstarray));
