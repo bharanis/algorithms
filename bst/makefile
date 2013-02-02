@@ -5,7 +5,9 @@ COMMON := ../common
 
 EXECUTABLES := bst_array\
                bst_basic\
-               bst_enhanced
+               bst_enhanced\
+               largest_bst_in_bt\
+  
 
 all: $(EXECUTABLES) 
 
@@ -14,6 +16,9 @@ help:
 	@echo "all      - makes all"
 	@echo "clean    - cleans all"
 	@echo "filename - builds filename.c"
+
+largest_bst_in_bt:   largest_bst_in_bt.o $(COMMON)/binarytree_utils.o $(COMMON)/binarytree_utils.h
+	$(CC) -o $@ $^
 
 bst_enhanced:   bst_enhanced.o $(COMMON)/binarytree_utils.o $(COMMON)/binarytree_utils.h
 	$(CC) -o $@ $^

@@ -56,7 +56,7 @@ bnode *_random_insert (bnode **root, int key, int d)
    if (random()%10 > 5) {
       return _random_insert (&(*root)->left, key, ++d);
    }
-   else if ((*root)->key < key) {
+   else {
       return _random_insert (&(*root)->right, key, ++d);
    }
 
@@ -234,11 +234,11 @@ ws_tidy_nodereset(bnode *root, void *c)
 
 ws_tidy(bnode *root)
 {
-    int max_height = depth(root);
+    int max_height = depth(root) + root->height;
     struct ws_tidy_ctx  ctx;
     int i;
 
-    inorder (root, (void (*) (bnode*, void*))ws_tidy_nodereset, NULL);
+    inorder(root, (void (*) (bnode*, void*))ws_tidy_nodereset, NULL);
 
     ctx.modifier = (int*) malloc (max_height * sizeof(int)); 
     ctx.nextpos = (int*) malloc (max_height * sizeof(int)); 
@@ -493,6 +493,7 @@ int _random_swap(bnode *root, bnode *swapnode, int swaps)
          temp = root->key;
          root->key = swapnode->key;
          swapnode->key = temp;
+printf ("swapped: %d and %d\n", root->key, swapnode->key);
          swapnode = NULL;
       }
    }
@@ -511,7 +512,7 @@ int _isbst(bnode *root, int min, int max)
    if (!root) return 1;
 
    if ((root->key > max) || (root->key < min)) {
-      printf ("%d is out of order\n", root->key);
+//      printf ("%d is out of order\n", root->key);
       return 0;
    }
 
