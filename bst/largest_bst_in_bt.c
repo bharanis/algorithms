@@ -5,12 +5,82 @@
 
 #include "binarytree_utils.h"
 
+
+
+#if 0
+
+Logic used:
+1. Current node forms a BST if:
+  a. left subtree is BST
+  b. right subtree is BST
+  c. root->key > (left subtree).max value
+  d. root->key < (right subtree).min value
+2. Leaf node is treated as a BST of size 1
+   Leaf node is identified by 2 NULL subtrees.
+3. If current node is a BST, pass it up
+   If not pass up the largest BST between left and right subtree
+
+Data required from each subtree (recursion level):
+ 1. isBST           << is the subtree a BST
+ 2. max             << max value of the subtree
+ 3. min             << min value of the subtree
+ 4. largestbstsize  << size of largest BST contained in the subtree
+ 5. largestbst      << pointer to largest BST contained in the subtree
+ 6. isNULL          << is the subtree a NULL subtree
+Data passed to each subtree (recursion level):
+ 1. root   << pointer to subtree
+
+i. => input params
+o. => o/p return value < passed up to caller
+r. => right
+l. => left
+
+(o.isBST, o.min, o.max, o.largestbstsize, o.largestbst, o.isNULL) returned from LBST() taking (i.root)
+{
+  if NULL == i.root {
+    o.isNULL = true
+    return;
+  }
+
+  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
+  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
+
+  // Extract Min and Max values
+  // if left subtree exists, inherit smallest node, else current node is smallest
+  o.min = (l.isNULL)?i.root->key:l.min
+  // if right subtree exists, inherit largest node, else current node is largest
+  o.max = (l.isNULL)?i.root->key:r.max
+
+
+  // set o.isBST 
+  // if we are leaf node mark bst as true
+  if (l.isNULL && r.isNULL)
+     o.isBST = true
+  // if left is bst and right is bst and current node is in order
+  else if(l.isBST && r.isBST && i.root->key > l.max && i.root->key < r.min)
+    o.isBST = true;
+  else 
+    o.isBST = false
+
+  if (o.isBST) {
+     // we are the largest subtree @ this level
+     o.largestbstsize = l.size + r.size + 1;
+     o.largestbst = i.root;
+  } else {
+     // pass up the largest subtree so far
+     o.largestbstsize = max(l.largestbstsize, r.largestbstsize)
+     o.largestbst     = (l.largestbstsize > r.largestbstsize)?l.largestbst:r.largestbst;
+  }
+}
+
+#endif
+
+
 /* 
  * Largest subtree of a given Binary Tree that 
  * includes all the descendants and is a Binary Search Tree
  * Bottom up approach - postorder
- * The resultant tree should have all its descendants in BST order
- * Guess this is O(n)
+ * This is O(n)
  * solutionn form: http://leetcode.com/2010/11/largest-binary-search-tree-bst-in.html 
  */
 
@@ -56,12 +126,12 @@ bnode *largest_bst_in_bt_alldescendants_bottomup(bnode *root)
 }
 
 
+
 /* 
  * Largest subtree of a given Binary Tree that 
  * includes all the descendants and is a Binary Search Tree
  * Top down approach - preorder
  * The resultant tree should have all its descendants in BST order
- * Guess this is O(nlog(n))
  */
 bnode *largest_bst_in_bt_alldescendants_topdown(bnode *root)
 {
