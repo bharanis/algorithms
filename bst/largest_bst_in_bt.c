@@ -10,6 +10,7 @@
 #if 0
 
 Logic used:
+===========
 1. Current node forms a BST if:
   a. left subtree is BST
   b. right subtree is BST
@@ -30,6 +31,9 @@ Data required from each subtree (recursion level):
 Data passed to each subtree (recursion level):
  1. root   << pointer to subtree
 
+
+pseudo code:
+============
 i. => input params
 o. => o/p return value < passed up to caller
 r. => right
@@ -39,8 +43,11 @@ l. => left
 {
   if NULL == i.root {
     o.isNULL = true
+    o.largestbstsize = 0
     return;
-  }
+  } else 
+    o.isNULL = false
+  
 
   l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
   r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
@@ -64,7 +71,7 @@ l. => left
 
   if (o.isBST) {
      // we are the largest subtree @ this level
-     o.largestbstsize = l.size + r.size + 1;
+     o.largestbstsize = l.largestbstsize + r.largestbstsize + 1;
      o.largestbst = i.root;
   } else {
      // pass up the largest subtree so far
@@ -74,6 +81,67 @@ l. => left
 }
 
 #endif
+
+//code iteration 1:
+//=================
+struct lbst_op {
+  int    isBST;
+  int    isNULL;
+  int    min;
+  int    max;
+  int    largestbstsize;
+  bnode *largestbst;
+};
+
+#define true  1
+#define false 0
+
+struct lbst_op LBST(bnode *root)
+{
+  struct lbst_op o, l, r;
+
+  if (NULL == root) {
+    o.isNULL = true;
+    o.largestbstsize = 0;
+    return o;
+  }
+  else {
+   o.isNULL = false;
+  }
+
+  l = LBST(root->left);
+  r = LBST(root->right);
+
+  // Extract Min and Max values
+  // if left subtree exists, inherit smallest node, else current node is smallest
+  o.min = (l.isNULL)?root->key:l.min;
+  // if right subtree exists, inherit largest node, else current node is largest
+  o.max = (l.isNULL)?root->key:r.max;
+
+
+  // set o.isBST 
+  // if we are leaf node mark bst as true
+  // if left is bst and right is bst and current node is in order
+  if((l.isNULL || (l.isBST && (root->key > l.max))) && 
+          (r.isNULL || (r.isBST && (root->key < r.min))))
+    o.isBST = true;
+  else 
+    o.isBST = false;
+
+  if (o.isBST) {
+     // we are the largest subtree @ this level
+     o.largestbstsize = l.largestbstsize + r.largestbstsize + 1;
+     o.largestbst = root;
+  } else {
+     // pass up the largest subtree so far
+     o.largestbstsize = (l.largestbstsize > r.largestbstsize)?l.largestbstsize:r.largestbstsize;
+     o.largestbst     = (l.largestbstsize > r.largestbstsize)?l.largestbst:r.largestbst;
+  }
+
+  return o;
+}
+
+
 
 
 /* 
@@ -172,6 +240,7 @@ main ()
    int input_size, i, trial;
    bnode *btroot  = NULL;
    bnode *bstroot = NULL;
+   struct lbst_op o;
 
    srandom(&i);
 
@@ -189,6 +258,9 @@ main ()
       print_tree(largest_bst_in_bt_alldescendants_topdown(btroot));
       printf ("binary search tree method 2:\n");
       print_tree(largest_bst_in_bt_alldescendants_bottomup(btroot));
+      printf ("binary search tree method 3:\n");
+      o = LBST(btroot);
+      print_tree(o.largestbst);
 
       /* delete tree */
       delete_tree (btroot);
