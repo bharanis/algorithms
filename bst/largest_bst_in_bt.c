@@ -56,7 +56,7 @@ l. => left
   // if left subtree exists, inherit smallest node, else current node is smallest
   o.min = (l.isNULL)?i.root->key:l.min
   // if right subtree exists, inherit largest node, else current node is largest
-  o.max = (l.isNULL)?i.root->key:r.max
+  o.max = (r.isNULL)?i.root->key:r.max
 
 
   // set o.isBST 
@@ -116,7 +116,7 @@ struct lbst_op LBST(bnode *root)
   // if left subtree exists, inherit smallest node, else current node is smallest
   o.min = (l.isNULL)?root->key:l.min;
   // if right subtree exists, inherit largest node, else current node is largest
-  o.max = (l.isNULL)?root->key:r.max;
+  o.max = (r.isNULL)?root->key:r.max;
 
 
   // set o.isBST 
