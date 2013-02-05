@@ -39,7 +39,7 @@ o. => o/p return value < passed up to caller
 r. => right
 l. => left
 
-(o.isBST, o.min, o.max, o.largestbstsize, o.largestbst, o.isNULL) returned from LBST() taking (i.root)
+(o.isBST, o.min, o.max, o.largestbstsize, o.largestbst, o.isNULL) returned from LBSTSubtree() taking (i.root)
 {
   if NULL == i.root {
     o.isNULL = true
@@ -49,8 +49,8 @@ l. => left
     o.isNULL = false
   
 
-  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
-  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
+  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->left)
+  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->right)
 
   // Extract Min and Max values
   // if left subtree exists, inherit smallest node, else current node is smallest
@@ -94,8 +94,8 @@ Also return stack values => copying entire struct on each return call.
      return;
   }
 
-  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
-  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
+  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->left)
+  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->right)
 
   o.min = (l.isNULL)?i.root->key:l.min
   o.max = (r.isNULL)?i.root->key:r.max
@@ -132,12 +132,12 @@ step1: rearrange statements to group "l" and "r"
      return;
   }
 
-  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
+  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->left)
   if !(l.isNULL || (l.isBST && i.root->key > l.max))
      o.isBST = false
   o.min = (l.isNULL)?i.root->key:l.min
 
-  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
+  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->right)
   if !(r.isNULL || (r.isBST && i.root->key < r.min))
      o.isBST = false
   o.max = (r.isNULL)?i.root->key:r.max
@@ -162,12 +162,12 @@ step2: replace l and r with same variable "lr"
   }
   o.isBST = true;
 
-  lr.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
+  lr.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->left)
   if !(lr.isNULL || (lr.isBST && i.root->key > lr.max))
      o.isBST = false
   o.min = (l.isNULL)?i.root->key:l.min
 
-  lr.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
+  lr.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBSTSubtree(i.root->right)
   if !(lr.isNULL || (lr.isBST && i.root->key < lr.min))
      o.isBST = false
   o.max = (r.isNULL)?i.root->key:lr.max
@@ -199,13 +199,13 @@ Total is 14.
   }
   o.isBST = true;
 
-  lr.(isBST, isNULL, max, min, size) <= LBST(i.root->left)
+  lr.(isBST, isNULL, max, min, size) <= LBSTSubtree(i.root->left)
   lsize = lr.size;
   if !(lr.isNULL || (lr.isBST && i.root->key > lr.max))
      o.isBST = false
   o.min = (l.isNULL)?i.root->key:l.min
 
-  lr.(isBST, isNULL, max, min, size) <= LBST(i.root->right)
+  lr.(isBST, isNULL, max, min, size) <= LBSTSubtree(i.root->right)
   rsize = lr.size;
   if !(lr.isNULL || (lr.isBST && i.root->key < lr.min))
      o.isBST = false
@@ -237,13 +237,13 @@ Total is 14.
   }
   isBST = true;
 
-  lr.(max, min, size) <= LBST(i.root->left)
+  lr.(max, min, size) <= LBSTSubtree(i.root->left)
   lsize = lr.size;
   if !((lr.size == 0) || ((lr.size>=0) && i.root->key > lr.max))
      isBST = false
   o.min = (lr.size == 0)?i.root->key:l.min
 
-  lr.(max, min, size) <= LBST(i.root->right)
+  lr.(max, min, size) <= LBSTSubtree(i.root->right)
   rsize = lr.size;
   if !((lr.size == 0) || ((lr.size>=0) && i.root->key < lr.min))
      isBST = false
@@ -283,13 +283,13 @@ Total is 14.
   }
   isBST = true;
 
-  lsize <= LBST(i.root->left)
+  lsize <= LBSTSubtree(i.root->left)
   
   if !((lsize == 0) || ((lsize>=0) && i.root->key > g_max))
      isBST = false
   curmin = (lsize == 0)?i.root->key:g_min
 
-  rsize <= LBST(i.root->right)
+  rsize <= LBSTSubtree(i.root->right)
   if !((rsize == 0) || ((rsize>=0) && i.root->key < g_min))
      isBST = false
   curmax = (rsize == 0)?i.root->key:g_max
@@ -332,7 +332,7 @@ struct lbst_op {
 #define true  1
 #define false 0
 
-struct lbst_op LBST1(bnode *root)
+struct lbst_op LBSTSubtree1(bnode *root)
 {
   struct lbst_op o, l, r;
 
@@ -345,8 +345,8 @@ struct lbst_op LBST1(bnode *root)
    o.isNULL = false;
   }
 
-  l = LBST1(root->left);
-  r = LBST1(root->right);
+  l = LBSTSubtree1(root->left);
+  r = LBSTSubtree1(root->right);
 
   // Extract Min and Max values
   // if left subtree exists, inherit smallest node, else current node is smallest
@@ -382,7 +382,7 @@ struct lbst_op LBST1(bnode *root)
 //=================
 // instead of global variable, we are using top of recursion stack variable 
 
-int _LBST2(bnode *root, int *min, int *max, bnode **largestbst, int *largestbstsize)
+int _LBSTSubtree2(bnode *root, int *min, int *max, bnode **largestbst, int *largestbstsize)
 {
   int lsize, rsize, isBST, curmin, curmax, size;
 
@@ -390,12 +390,12 @@ int _LBST2(bnode *root, int *min, int *max, bnode **largestbst, int *largestbsts
      return 0;
   isBST = true;
 
-  lsize = _LBST2(root->left, min, max, largestbst, largestbstsize);
+  lsize = _LBSTSubtree2(root->left, min, max, largestbst, largestbstsize);
   if (!((lsize == 0) || ((lsize>=0) && (root->key > *max))))
      isBST = false;
   curmin = (lsize == 0)?root->key:*min;
 
-  rsize = _LBST2(root->right, min, max, largestbst, largestbstsize);
+  rsize = _LBSTSubtree2(root->right, min, max, largestbst, largestbstsize);
   if (!((rsize == 0) || ((rsize>=0) && (root->key < *min))))
      isBST = false;
   curmax = (rsize == 0)?root->key:*max;
@@ -416,12 +416,12 @@ int _LBST2(bnode *root, int *min, int *max, bnode **largestbst, int *largestbsts
     return -1;
 }
 
-bnode *LBST2(bnode *root)
+bnode *LBSTSubtree2(bnode *root)
 {
    bnode *largestbst;
    int min,max,largestbstsize=INT_MIN;
 
-   _LBST2(root, &min, &max, &largestbst, &largestbstsize);
+   _LBSTSubtree2(root, &min, &max, &largestbst, &largestbstsize);
    return largestbst;
 }
 
@@ -435,19 +435,19 @@ bnode *LBST2(bnode *root)
  * solutionn form: http://leetcode.com/2010/11/largest-binary-search-tree-bst-in.html 
  */
 
-int _largest_bst_in_bt_alldescendants_bottomup(bnode *root, int *min, int *max, int *largestsize, bnode **largestbst)
+int _largest_bst_subtree_in_bt_alldescendants_bottomup(bnode *root, int *min, int *max, int *largestsize, bnode **largestbst)
 {
    int curmin, curmax, lsize, rsize, size;
    int isBST = 1;
    
    if (root == NULL) return 0;
 
-   lsize = _largest_bst_in_bt_alldescendants_bottomup(root->left,  min, max, largestsize, largestbst);
+   lsize = _largest_bst_subtree_in_bt_alldescendants_bottomup(root->left,  min, max, largestsize, largestbst);
    curmin = (lsize == 0)?root->key:*min;
    if((lsize == -1) || ((lsize != 0) && (root->key <= *max)))
       isBST = 0;
 
-   rsize = _largest_bst_in_bt_alldescendants_bottomup(root->right, min, max, largestsize, largestbst);
+   rsize = _largest_bst_subtree_in_bt_alldescendants_bottomup(root->right, min, max, largestsize, largestbst);
    curmax = (rsize == 0)?root->key:*max;
    if((rsize == -1) || ((rsize != 0) && (root->key >= *min)))
       isBST = 0;
@@ -466,11 +466,11 @@ int _largest_bst_in_bt_alldescendants_bottomup(bnode *root, int *min, int *max, 
    return -1;
 }
 
-bnode *largest_bst_in_bt_alldescendants_bottomup(bnode *root)
+bnode *largest_bst_subtree_in_bt_alldescendants_bottomup(bnode *root)
 {
    int min, max, size = INT_MIN;
    bnode *bst = NULL;
-   _largest_bst_in_bt_alldescendants_bottomup(root, &min, &max, &size, &bst);
+   _largest_bst_subtree_in_bt_alldescendants_bottomup(root, &min, &max, &size, &bst);
    return bst;
 }
 
@@ -482,7 +482,7 @@ bnode *largest_bst_in_bt_alldescendants_bottomup(bnode *root)
  * Top down approach - preorder
  * The resultant tree should have all its descendants in BST order
  */
-bnode *largest_bst_in_bt_alldescendants_topdown(bnode *root)
+bnode *largest_bst_subtree_in_bt_alldescendants_topdown(bnode *root)
 {
    int countleft  = 0;
    int countright = 0;
@@ -495,8 +495,8 @@ bnode *largest_bst_in_bt_alldescendants_topdown(bnode *root)
    }
 
 
-   l = largest_bst_in_bt_alldescendants_topdown(root->left);
-   r = largest_bst_in_bt_alldescendants_topdown(root->right);
+   l = largest_bst_subtree_in_bt_alldescendants_topdown(root->left);
+   r = largest_bst_subtree_in_bt_alldescendants_topdown(root->right);
    
    if ((l != NULL) && (r != NULL)) {
      countright = count(r);
@@ -536,14 +536,14 @@ main ()
       random_swap(btroot, 10);
 
       printf ("binary search tree method 1:\n");
-      print_tree(largest_bst_in_bt_alldescendants_topdown(btroot));
+      print_tree(largest_bst_subtree_in_bt_alldescendants_topdown(btroot));
       printf ("binary search tree method 2:\n");
-      print_tree(largest_bst_in_bt_alldescendants_bottomup(btroot));
+      print_tree(largest_bst_subtree_in_bt_alldescendants_bottomup(btroot));
       printf ("binary search tree method 3:\n");
-      o = LBST1(btroot);
+      o = LBSTSubtree1(btroot);
       print_tree(o.largestbst);
       printf ("binary search tree method 4:\n");
-      print_tree(LBST2(btroot));
+      print_tree(LBSTSubtree2(btroot));
 
 
 
