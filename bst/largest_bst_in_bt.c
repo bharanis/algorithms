@@ -84,165 +84,23 @@ l. => left
 
 pseudo code optimisation (reducing stack usage):
 ===============================================
-Iteration 1 uses approx 3(l,r,o)*6(struct elems) => 18 state variables
+Iteration 1 uses approx 3(l,r,o)*6(struct elems) => 18 state variables per stack level.
 Also return stack values => copying entire struct on each return call.
 
-1) iteration1 flow and variable dependancy:
-o.isNULL          F(root)
->> l = left-recursion
->> r = right-recursion
-o.isBST           F(root, l.isBST, l.max, r.isBST, r.min, l.isNULL, r.isNULL)
-o.min             F(root, l.isNULL, l.min)
-o.max             F(root, r.isNULL, r.max)
-o.largestbstsize  F(root, o.isBST, l.largestbstsize, r.largestbstsize)
-o.largestbst      F(root, o.isBST, l.largestbstsize, r.largestbstsize, l.largestbst, r.largestbst)
-
-2) Rearranging statements to resue same variable for left and right
-step1: rearrange statements to group "l" and "r"
-o.isNULL          F(root)
->> l = left-recursion
-o.isBST           F1(root, l.isBST, l.max, l.isNULL)
-l_largestbstsize  = l.largestbstsize
-l_largestbst      = l.largestbst    
-o.min             F(root, l.isNULL, l.min)
->> r = right-recursion
-o.isBST           F2(root, r.isBST, r.max, r.isNULL)
-o.max             F(root, r.isNULL, r.max)
-o.largestbstsize  F(root, o.isBST, l_largestbstsize, r.largestbstsize)
-o.largestbst      F(root, o.isBST, l_largestbstsize, r.largestbstsize, l.largestbst, r.largestbst)
-
-step2: replace l and r with same variable "lr"
-o.isNULL          F(root)
->> lr = left-recursion
-o.isBST           F1(root, lr.isBST, lr.max, lr.isNULL)
-l_largestbstsize  = lr.largestbstsize
-l_largestbst      = lr.largestbst    
-o.min             F(root, lr.isNULL, lr.min)
->> lr = right-recursion
-o.isBST           F2(root, lr.isBST, lr.max, lr.isNULL)
-o.max             F(root, lr.isNULL, lr.max)
-o.largestbstsize  F(root, o.isBST, l_largestbstsize, lr.largestbstsize)
-o.largestbst      F(root, o.isBST, l_largestbstsize, lr.largestbstsize, l.largestbst, r.largestbst)
-
-reduced 1*6 elems and added 2 new variables (l_xxx) => reduction of 4.
-Total is 14.
-
-3) clubbing isNULL and isBST 
-Values of isNULL and isBST as used in the above function.
-isNULL   isBST    isNULLorBST
- 1      not-set      0
- 0        0         -1
- 0        1          1
-
-o.isNULLorBST     F(root)
->> lr = left-recursion
-o_isBST           F1(root, lr.isNULLorBST, lr.max)
-l_largestbstsize  = lr.largestbstsize
-l_largestbst      = lr.largestbst    
-o.min             F(root, lr.isNULLorBST, lr.min)
->> lr = right-recursion
-o_isBST           F2(root, lr.isNULLorBST, lr.max)
-o.max             F(root, lr.isNULLorBST, lr.max)
-o.largestbstsize  F(root, o_isBST, l_largestbstsize, lr.largestbstsize)
-o.largestbst      F(root, o_isBST, l_largestbstsize, lr.largestbstsize, l.largestbst, r.largestbst)
-o.isNULLorBST     F(o_isBST)
-
-reduced 3*1elem and added o_isBST => reduction of 2.
-Total is 12.
-
-4) use global variable (or root recursion stack variable) to store the largestbst instead of passing up recursion chain purely via stack variables
-g_largestbst, g_largestbstsize  => accumulated across recursions
-
-o.isNULLorBST     F(root)
->> lr = left-recursion
-o_isBST           F1(root, lr.isNULLorBST, lr.max)
-l_largestbstsize  = lr.largestbstsize
-o.min             F(root, lr.isNULLorBST, lr.min)
->> lr = right-recursion
-r_largestbstsize  = lr.largestbstsize
-o_isBST           F2(root, lr.isNULLorBST, lr.max)
-o.max             F(root, lr.isNULLorBST, lr.max)
-g_largestbstsize  F(o_isBST, l_largestbstsize, r_largestbstsize)
-g_largestbst      F(root, o_isBST, l_largestbstsize, r_largestbstsize) << largestbst from l/r would already have been accumulated here
-o.isNULLorBST     F(o_isBST)
-
-
-Replace largestbstsize (which is the size of any BST subtree to the tree pointed by root) with bstsize(which is the size if the entire subtree is BST)
-This is ok since we accumulate the largestbst in the g_largestbst
-Now l/r.bstsize is the size of the immediate child subtree.
-
-o.isNULLorBST     F(root)
->> lr = left-recursion
-o_isBST           F1(root, lr.isNULLorBST, lr.max)
-l_bstsize   = lr.bstsize
-o.min             F(root, lr.isNULLorBST, lr.min)
->> lr = right-recursion
-r_bstsize   = lr.bstsize
-o_isBST           F2(root, lr.isNULLorBST, lr.max)
-o.max             F(root, lr.isNULLorBST, lr.max)
-o.bstsize   =     F(o_isBST, l_bstsize , r_bstsize )
-g_largestbstsize  F(o_isBST, o.bstsize)
-g_largestbst      F(root, o_isBST, o.bstsize) << largestbst from l/r would already have been accumulated here
-o.isNULLorBST     F(o_isBST)
-
-
-overload bstsize with isBSTorNULL info in the following way:
-isBSTorNULL     bstsize
-  NULL(0)         0
-  BST(1)          >=1 => actual size of bst subtree
- !BST(-1)         -1
-
-o.bstsize(0)     F(root)
->> lr = left-recursion
-o_isBST           F1(root, lr.bstsize, lr.max)
-l_bstsize   = lr.bstsize
-o.min             F(root, lr.bstsize, lr.min)
->> lr = right-recursion
-r_bstsize   = lr.bstsize
-o_isBST           F2(root, lr.bstsize, lr.max)
-o.max             F(root, lr.bstsize, lr.max)
-o.bstsize   =     F(o_isBST, l_bstsize , r_bstsize)
-g_largestbstsize  F(o_isBST, o.bstsize)
-g_largestbst      F(root, o_isBST, o.bstsize) << largestbst from l/r would already have been accumulated here
-
-
-
-
-i. => input params
-o. => o/p return value < passed up to caller
-r. => right
-l. => left
-
-(o.isBST, o.min, o.max, o.largestbstsize, o.largestbst, o.isNULL) returned from LBST() taking (i.root)
-{
-  if NULL == i.root {
-    o.isNULL = true
-    o.largestbstsize = 0
-    return;
-  } else 
-    o.isNULL = false
-  
+1) iteration1 flow
+  if root==NULL {
+     o.isNULL=true;
+     o.largestbstsize = 0;
+     return;
+  }
 
   l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
   r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
 
-  // Extract Min and Max values
-  // if left subtree exists, inherit smallest node, else current node is smallest
   o.min = (l.isNULL)?i.root->key:l.min
-  // if right subtree exists, inherit largest node, else current node is largest
   o.max = (r.isNULL)?i.root->key:r.max
 
-
-  // set o.isBST 
-  // if we are leaf node mark bst as true
-  // if left is bst and right is bst and current node is in order
-  // if left is NULL and right is BST 
-  // if right is NULL and left is BST 
-  if (l.isNULL || (l.isBST && i.root->key > l.max)) &&
-     (r.isNULL || (r.isBST && i.root->key < r.min))
-    o.isBST = true;
-  else 
-    o.isBST = false
+  o.isBST = ((l.isNULL || (l.isBST && i.root->key > l.max)) && (r.isNULL || (r.isBST && i.root->key < r.min))) ? true:false;
 
   if (o.isBST) {
      // we are the largest subtree @ this level
@@ -253,7 +111,182 @@ l. => left
      o.largestbstsize = max(l.largestbstsize, r.largestbstsize)
      o.largestbst     = (l.largestbstsize > r.largestbstsize)?l.largestbst:r.largestbst;
   }
-}
+
+2) Rearranging statements to resue same variable for left and right
+step1: rearrange statements to group "l" and "r"
+
+  o.isBST = true;
+  if root==NULL {
+     o.isNULL=true;
+     o.largestbstsize = 0;
+     return;
+  }
+
+  l.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
+  if !(l.isNULL || (l.isBST && i.root->key > l.max))
+     o.isBST = false
+  o.min = (l.isNULL)?i.root->key:l.min
+
+  r.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
+  if !(r.isNULL || (r.isBST && i.root->key < r.min))
+     o.isBST = false
+  o.max = (r.isNULL)?i.root->key:r.max
+
+  if (o.isBST) {
+     // we are the largest subtree @ this level
+     o.largestbstsize = l.largestbstsize + r.largestbstsize + 1;
+     o.largestbst = i.root;
+  } else {
+     // pass up the largest subtree so far
+     o.largestbstsize = max(l.largestbstsize, r.largestbstsize)
+     o.largestbst     = (l.largestbstsize > r.largestbstsize)?l.largestbst:r.largestbst;
+  }
+
+
+step2: replace l and r with same variable "lr"
+
+  if root==NULL {
+     o.isNULL=true;
+     o.largestbstsize = 0;
+     return;
+  }
+  o.isBST = true;
+
+  lr.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->left)
+  if !(lr.isNULL || (lr.isBST && i.root->key > lr.max))
+     o.isBST = false
+  o.min = (l.isNULL)?i.root->key:l.min
+
+  lr.(isBST, isNULL, max, min, largestbst, largestbstsize) <= LBST(i.root->right)
+  if !(lr.isNULL || (lr.isBST && i.root->key < lr.min))
+     o.isBST = false
+  o.max = (r.isNULL)?i.root->key:lr.max
+
+  if (o.isBST) {
+     // we are the largest subtree @ this level
+     o.largestbstsize = l.largestbstsize + r.largestbstsize + 1;
+     o.largestbst = i.root;
+  } else {
+     // pass up the largest subtree so far
+     o.largestbstsize = max(l.largestbstsize, r.largestbstsize)
+     o.largestbst     = (l.largestbstsize > r.largestbstsize)?l.largestbst:r.largestbst;
+  }
+
+
+reduced 1*6 elems and added 2 new variables (l_xxx) => reduction of 4.
+Total is 14.
+
+3)use global variable (or top of recursion stack variable) to store the largestbst 
+  instead of passing up recursion chain purely via stack variables.
+  g_largestbst, g_largestbstsize  => accumulated across recursions
+  so we dont need to store largestbst.
+  and we can replace largestbstsize with just size (of the current tree if BST)
+
+  if root==NULL {
+     o.isNULL=true;
+     o.size = 0;
+     return;
+  }
+  o.isBST = true;
+
+  lr.(isBST, isNULL, max, min, size) <= LBST(i.root->left)
+  lsize = lr.size;
+  if !(lr.isNULL || (lr.isBST && i.root->key > lr.max))
+     o.isBST = false
+  o.min = (l.isNULL)?i.root->key:l.min
+
+  lr.(isBST, isNULL, max, min, size) <= LBST(i.root->right)
+  rsize = lr.size;
+  if !(lr.isNULL || (lr.isBST && i.root->key < lr.min))
+     o.isBST = false
+  o.max = (r.isNULL)?i.root->key:lr.max
+
+  if (o.isBST) {
+     // we are the largest subtree @ this level
+     o.size = lsize + rsize + 1;
+     if (g_largestbstsize < o.size) {
+        g_largestbstsize = o.size;  
+        g_largestbst = root;
+     }
+  }
+
+
+4) overload size with isBST and isNULL info in the following way:
+  size == 0  => isNULL
+  size == -1 => !isBST
+  size >= 1  => isBST
+  we dont have to return isBST.
+
+  if root==NULL {
+     o.size = 0;
+     return;
+  }
+  isBST = true;
+
+  lr.(max, min, size) <= LBST(i.root->left)
+  lsize = lr.size;
+  if !((lr.size == 0) || ((lr.size>=1) && i.root->key > lr.max))
+     isBST = false
+  o.min = (lr.size == 0)?i.root->key:l.min
+
+  lr.(max, min, size) <= LBST(i.root->right)
+  rsize = lr.size;
+  if !((lr.size == 0) || ((lr.size>=1) && i.root->key < lr.min))
+     isBST = false
+  o.max = (lr.size == 0)?i.root->key:lr.max
+
+  if (isBST) {
+     // we are the largest subtree @ this level
+     o.size = lsize + rsize + 1;
+     if (g_largestbstsize < o.size) {
+        g_largestbstsize = o.size;  
+        g_largestbst = root;
+     }
+  }
+  else 
+    o.size = -1;
+
+5) If @ this level we are not a BST, the entire recursion stack above us will 
+   not be a BST (think subtree is !BST => tree is not BST)
+   Unless at some level of unwinding, we start building recursion again (walking down another subtree)
+   We cache the min from left and max from right into local variables before overwriting the global min, max
+   with a recursion call.
+   Since we use global variables (or top of recursion stack variable), remove max/min from return context
+   This way we replace min/max from each side with min/max @ just our level.
+
+  if root==NULL {
+     return 0;
+  }
+  isBST = true;
+
+  lsize <= LBST(i.root->left)
+  
+  if !((lsize == 0) || ((lsize>=1) && i.root->key > g_max))
+     isBST = false
+  curmin = (lsize == 0)?i.root->key:g_min
+
+  rsize <= LBST(i.root->right)
+  if !((rsize == 0) || ((rsize>=1) && i.root->key < g_min))
+     isBST = false
+  curmax = (rsize == 0)?i.root->key:g_max
+
+  if (isBST) {
+     // we are the largest subtree @ this level
+     size = lsize + rsize + 1;
+     if (g_largestbstsize < o.size) {
+        g_largestbstsize = o.size;  
+        g_largestbst = root;
+     }
+     g_min = curmin
+     g_max = curmax
+     return size;
+  }
+  else 
+    return -1;
+
+
+stack space per level:
+isBST + size + curmin + curmax + lsize + rsize => 6
 
 
 #endif
@@ -275,7 +308,7 @@ struct lbst_op {
 #define true  1
 #define false 0
 
-struct lbst_op LBST(bnode *root)
+struct lbst_op LBST1(bnode *root)
 {
   struct lbst_op o, l, r;
 
@@ -288,8 +321,8 @@ struct lbst_op LBST(bnode *root)
    o.isNULL = false;
   }
 
-  l = LBST(root->left);
-  r = LBST(root->right);
+  l = LBST1(root->left);
+  r = LBST1(root->right);
 
   // Extract Min and Max values
   // if left subtree exists, inherit smallest node, else current node is smallest
@@ -321,69 +354,52 @@ struct lbst_op LBST(bnode *root)
 }
 
 
-#if 0
 //code iteration 2:
 //=================
- 
+// instead of global variable, we are using top of recursion stack variable 
 
-struct lbst_op {
-  int    isBST;
-  int    isNULL;
-  int    min;
-  int    max;
-  int    largestbstsize;
-  bnode *largestbst;
-};
-
-#define true  1
-#define false 0
-
-struct lbst_op LBST(bnode *root)
+int _LBST2(bnode *root, int *min, int *max, bnode **largestbst, int *largestbstsize)
 {
-  struct lbst_op o, l, r;
+  int lsize, rsize, isBST, curmin, curmax, size;
 
-  if (NULL == root) {
-    o.isNULL = true;
-    o.largestbstsize = 0;
-    return o;
-  }
-  else {
-   o.isNULL = false;
-  }
+  if (root==NULL) 
+     return 0;
+  isBST = true;
 
-  l = LBST(root->left);
-  r = LBST(root->right);
+  lsize = _LBST2(root->left, min, max, largestbst, largestbstsize);
+  if (!((lsize == 0) || ((lsize>=1) && (root->key > *max))))
+     isBST = false;
+  curmin = (lsize == 0)?root->key:*min;
 
-  // Extract Min and Max values
-  // if left subtree exists, inherit smallest node, else current node is smallest
-  o.min = (l.isNULL)?root->key:l.min;
-  // if right subtree exists, inherit largest node, else current node is largest
-  o.max = (r.isNULL)?root->key:r.max;
+  rsize = _LBST2(root->right, min, max, largestbst, largestbstsize);
+  if (!((rsize == 0) || ((rsize>=1) && (root->key < *min))))
+     isBST = false;
+  curmax = (rsize == 0)?root->key:*max;
 
-
-  // set o.isBST 
-  // if we are leaf node mark bst as true
-  // if left is bst and right is bst and current node is in order
-  if((l.isNULL || (l.isBST && (root->key > l.max))) && 
-     (r.isNULL || (r.isBST && (root->key < r.min))))
-    o.isBST = true;
-  else 
-    o.isBST = false;
-
-  if (o.isBST) {
+  if (isBST) {
      // we are the largest subtree @ this level
-     o.largestbstsize = l.largestbstsize + r.largestbstsize + 1;
-     o.largestbst = root;
-  } else {
-     // pass up the largest subtree so far
-     o.largestbstsize = (l.largestbstsize > r.largestbstsize)?l.largestbstsize:r.largestbstsize;
-     o.largestbst     = (l.largestbstsize > r.largestbstsize)?l.largestbst:r.largestbst;
-  }
+     size = lsize + rsize + 1;
+     if (*largestbstsize < size) {
+        *largestbstsize = size;  
+        *largestbst = root;
+     }
 
-  return o;
+     *min = curmin;
+     *max = curmax;
+     return size;
+  }
+  else 
+    return -1;
 }
 
-#endif
+bnode *LBST2(bnode *root)
+{
+   bnode *largestbst;
+   int min,max,largestbstsize=INT_MIN;
+
+   _LBST2(root, &min, &max, &largestbst, &largestbstsize);
+   return largestbst;
+}
 
 
 
@@ -500,8 +516,13 @@ main ()
       printf ("binary search tree method 2:\n");
       print_tree(largest_bst_in_bt_alldescendants_bottomup(btroot));
       printf ("binary search tree method 3:\n");
-      o = LBST(btroot);
+      o = LBST1(btroot);
       print_tree(o.largestbst);
+      printf ("binary search tree method 4:\n");
+      print_tree(LBST2(btroot));
+
+
+
 
       /* delete tree */
       delete_tree (btroot);
