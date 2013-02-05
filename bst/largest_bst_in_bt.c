@@ -114,6 +114,16 @@ Also return stack values => copying entire struct on each return call.
 
 2) Rearranging statements to resue same variable for left and right
 step1: rearrange statements to group "l" and "r"
+       note 
+         o.isBST = (x && y)?:true:false;
+       is equivalent to
+         o.isBST = !(x && y)?:false:true;
+       is equivalent to
+         o.isBST = (!x || !y)?:false:true;
+       is equivalent to
+         o.isBST = true;
+         if !x o.isBST = false;
+         if !y o.isBST = false;
 
   o.isBST = true;
   if root==NULL {
@@ -212,10 +222,14 @@ Total is 14.
 
 
 4) overload size with isBST and isNULL info in the following way:
-  size == 0  => isNULL
-  size == -1 => !isBST
-  size >= 1  => isBST
+   size == 0  => isNULL && isBST
+   size == -1 => !isBST
+   size >= 1  => isBST
   we dont have to return isBST.
+  Please Note
+   !(lr.isNULL || (lr.isBST && i.root->key < lr.min))
+  is equivalent to
+   (!lr.isNULL && (!lr.isBST || (i.root->key > lr.min)))
 
   if root==NULL {
      o.size = 0;
@@ -225,13 +239,13 @@ Total is 14.
 
   lr.(max, min, size) <= LBST(i.root->left)
   lsize = lr.size;
-  if !((lr.size == 0) || ((lr.size>=1) && i.root->key > lr.max))
+  if !((lr.size == 0) || ((lr.size>=0) && i.root->key > lr.max))
      isBST = false
   o.min = (lr.size == 0)?i.root->key:l.min
 
   lr.(max, min, size) <= LBST(i.root->right)
   rsize = lr.size;
-  if !((lr.size == 0) || ((lr.size>=1) && i.root->key < lr.min))
+  if !((lr.size == 0) || ((lr.size>=0) && i.root->key < lr.min))
      isBST = false
   o.max = (lr.size == 0)?i.root->key:lr.max
 
@@ -253,7 +267,17 @@ Total is 14.
    with a recursion call.
    Since we use global variables (or top of recursion stack variable), remove max/min from return context
    This way we replace min/max from each side with min/max @ just our level.
-
+   Note
+    !((lsize == 0) || ((lsize>=0) && i.root->key > g_max))
+   is equivalent to
+    (!(lsize == 0) && (!(lsize>=0) || (i.root->key <= g_max)))
+   is equivalent to
+    ((lsize != 0) && ((lsize == -1) || (i.root->key <= g_max)))
+   is equivalent to
+    ((lsize != 0) && (lsize == -1)) || ((lsize != 0) && (i.root->key <= g_max))
+   is equivalent to
+    (lsize == -1) || ((lsize != 0) && (i.root->key <= g_max))
+   
   if root==NULL {
      return 0;
   }
@@ -261,12 +285,12 @@ Total is 14.
 
   lsize <= LBST(i.root->left)
   
-  if !((lsize == 0) || ((lsize>=1) && i.root->key > g_max))
+  if !((lsize == 0) || ((lsize>=0) && i.root->key > g_max))
      isBST = false
   curmin = (lsize == 0)?i.root->key:g_min
 
   rsize <= LBST(i.root->right)
-  if !((rsize == 0) || ((rsize>=1) && i.root->key < g_min))
+  if !((rsize == 0) || ((rsize>=0) && i.root->key < g_min))
      isBST = false
   curmax = (rsize == 0)?i.root->key:g_max
 
@@ -367,12 +391,12 @@ int _LBST2(bnode *root, int *min, int *max, bnode **largestbst, int *largestbsts
   isBST = true;
 
   lsize = _LBST2(root->left, min, max, largestbst, largestbstsize);
-  if (!((lsize == 0) || ((lsize>=1) && (root->key > *max))))
+  if (!((lsize == 0) || ((lsize>=0) && (root->key > *max))))
      isBST = false;
   curmin = (lsize == 0)?root->key:*min;
 
   rsize = _LBST2(root->right, min, max, largestbst, largestbstsize);
-  if (!((rsize == 0) || ((rsize>=1) && (root->key < *min))))
+  if (!((rsize == 0) || ((rsize>=0) && (root->key < *min))))
      isBST = false;
   curmax = (rsize == 0)?root->key:*max;
 
